@@ -31,11 +31,16 @@ class AlumnoCard extends ConsumerWidget {
             ),
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () {
-                ref.read(alumnoProvider.notifier).deleteAlumno(alumno.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Alumno eliminado con éxito')),
-                );
+              onPressed: () async {
+                // Confirmación antes de eliminar
+                final confirmacion = await _confirmarEliminacion(context);
+                if (confirmacion == true) {
+                  // Eliminar alumno
+                  ref.read(alumnoProvider.notifier).deleteAlumno(alumno.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Alumno eliminado con éxito')),
+                  );
+                }
               },
             ),
           ],
@@ -44,9 +49,33 @@ class AlumnoCard extends ConsumerWidget {
           Navigator.pushNamed(context, '/alumno_form', arguments: alumno);
         },
       ),
-
-
     );
+  }
 
+  // Método para mostrar el diálogo de confirmación
+  Future<bool?> _confirmarEliminacion(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirmación'),
+          content: const Text('¿Estás seguro de que quieres eliminar este alumno?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Elimina sin confirmar
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Elimina confirmando
+              },
+              child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

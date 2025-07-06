@@ -30,11 +30,16 @@ class AsignaturaCard extends ConsumerWidget {
             ),
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () {
-                ref.read(asignaturaProvider.notifier).deleteAsignatura(asignatura.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Asignatura eliminada con éxito')),
-                );
+              onPressed: () async {
+                // Confirmación antes de eliminar
+                final confirmacion = await _confirmarEliminacion(context);
+                if (confirmacion == true) {
+                  // Eliminar asignatura
+                  ref.read(asignaturaProvider.notifier).deleteAsignatura(asignatura.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Asignatura eliminada con éxito')),
+                  );
+                }
               },
             ),
           ],
@@ -43,6 +48,33 @@ class AsignaturaCard extends ConsumerWidget {
           Navigator.pushNamed(context, '/asignatura_form', arguments: asignatura);
         },
       ),
+    );
+  }
+
+  // Método para mostrar el diálogo de confirmación
+  Future<bool?> _confirmarEliminacion(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirmación'),
+          content: const Text('¿Estás seguro de que quieres eliminar esta asignatura?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Elimina sin confirmar
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Elimina confirmando
+              },
+              child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -1,10 +1,12 @@
 // lib/presentation/widgets/nota_card.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_gestion_academica/domain/entities/nota.dart';
+import 'package:app_gestion_academica/presentation/providers/nota_provider.dart';
 import 'package:app_gestion_academica/presentation/views/nota_form_page.dart';
 
-class NotaCard extends StatelessWidget {
+class NotaCard extends ConsumerWidget {
   final Nota nota;
   final String alumnoNombre;
   final String alumnoApellido;
@@ -19,7 +21,7 @@ class NotaCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final fechaFormateada = nota.fecha != null
         ? DateFormat('yyyy-MM-dd').format(nota.fecha!)
         : 'Sin fecha';
@@ -55,6 +57,14 @@ class NotaCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: Colors.orange[900],
                       ),
+                    ),
+                    const Spacer(),  // Esto empuja los botones de eliminar al final
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        // Mostrar el diálogo de confirmación antes de eliminar
+                        _confirmarEliminacion(context, ref);
+                      },
                     ),
                   ],
                 ),
@@ -92,6 +102,40 @@ class NotaCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // Método para mostrar el diálogo de confirmación
+  void _confirmarEliminacion(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('¿Estás seguro?'),
+          content: const Text('Esta acción no se puede deshacer.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo si el usuario cancela
+              },
+            ),
+            TextButton(
+              child: const Text('Eliminar'),
+              onPressed: () {
+                // Llamar al método deleteNota de notaProvider para eliminar la nota
+                ref.read(notaProvider.notifier).deleteNota(nota.id);
+
+                // Cerrar el diálogo y mostrar el SnackBar de confirmación
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Nota eliminada con éxito')),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
