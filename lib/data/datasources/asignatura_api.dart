@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:app_gestion_academica/domain/entities/asignatura.dart';
 
 class AsignaturaApi {
-  final String baseUrl = 'https://gestion-academica-backend-td8y.onrender.com/api/asignaturas';
+  final String baseUrl = 'http://localhost:8082/api/asignaturas';
 
   Future<List<Asignatura>> getAll() async {
     final response = await http.get(Uri.parse(baseUrl));
